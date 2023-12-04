@@ -1,6 +1,9 @@
 import pygame, sys
 from settings import *
 from level import Level
+import argparse
+import time
+import socket
 
 from debug import debug, debug_init
 
@@ -14,12 +17,8 @@ class Game:
 		self.screen = pygame.Surface((2048, 1152)) # 32 * 18
 		# self.screen = pygame.Surface((1024, 576))
 
-		if FULLSCREEN:
-			self.resolution = pygame.display.list_modes()[0]
-			self.window = pygame.display.set_mode(self.resolution, pygame.FULLSCREEN)
-		else: 
-			self.resolution = RESOLUTION
-			self.window = pygame.display.set_mode(self.resolution, 0)
+		self.resolution = RESOLUTION
+		self.window = pygame.display.set_mode(self.resolution, pygame.FULLSCREEN if FULLSCREEN else 0)
         
 		pygame.display.set_caption(TITLE)
 		self.clock = pygame.time.Clock()
@@ -55,5 +54,30 @@ class Game:
 			self.clock.tick(FPS)
 
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	# parse resolution arguments
+	parser.add_argument('--resolution', type=str, default='1280x720')
+	parser.add_argument('--fullscreen', type=bool, default=False)
+	
+	# parse multiplayer arguments
+	parser.add_argument('-m', '--multiplayer', action='store_true')
+	parser.add_argument('--host', type=str, default='127.0.0.1')
+ 
+	parser.add_argument('-debug', '--debug', action='store_true')
+
+	args = parser.parse_args()
+ 
+	resolution = tuple(map(int, args.resolution.split('x')))
+	fullscreen = args.fullscreen
+	# debug = args.debug
+	if args.multiplayer:
+		print(f'Server IP: {args.host}')
+		while True:
+			print('Trying to connect to server...')
+			# print('Waiting for other player to connect...')
+			time.sleep(3)
+   
+	print(resolution, fullscreen) # , debug)
+ 
 	game = Game()
 	game.run()
