@@ -15,7 +15,7 @@ class MagicPlayer:
 	def get_next_attack(self):
 		return self.next_attack
 	
-	def attack(self,player,groups):
+	def attack(self,player,groups,type):
 			self.sounds['flame'].play()
 			if player.dir == [2,0]: direction = pygame.math.Vector2(1,0) # right
 			elif player.dir == [2,1]: direction = pygame.math.Vector2(-1,0) # left
@@ -34,4 +34,5 @@ class MagicPlayer:
 				self.boom = Boomerang(
 									x,y,
 									groups,
-									groups[1],direction,player)
+									groups[1],direction,player,type)
+				
