@@ -2,8 +2,6 @@ import pygame
 from settings import *
 from support import import_folder
 from entity import Entity
-from boomerang import Boomerang
-import math
 
 class Player(Entity):
 	def __init__(self,pos,groups,obstacle_sprites,create_attack,destroy_attack,create_magic):
@@ -109,7 +107,6 @@ class Player(Entity):
 					self.can_attack = False
 			else:
 				self.stats['speed'] = self.speed
-				# self.can_attack = True
 
 			# attack input 
 			if keys[pygame.K_SPACE] and self.can_attack:
@@ -120,7 +117,6 @@ class Player(Entity):
 				
 				self.can_attack = False
 				self.can_attack_time = pygame.time.get_ticks()
-				# print(self.can_attack)
 
 			# projectile input 
 			if keys[pygame.K_LCTRL] and self.can_attack:
@@ -133,7 +129,7 @@ class Player(Entity):
         
 				self.can_attack = False
 				self.can_attack_time = pygame.time.get_ticks()
-        #Boomerang(self.rect.centerx,self.rect.centery,self.groups,self.obstacle_sprites)
+        
 
 			if keys[pygame.K_q] and self.can_switch_weapon:
 				self.can_switch_weapon = False
@@ -156,6 +152,7 @@ class Player(Entity):
 					self.magic_index = 0
 
 				self.magic = list(magic_data.keys())[self.magic_index]
+				
 
 	def get_status(self):
 
@@ -230,7 +227,13 @@ class Player(Entity):
 		return base_damage + spell_damage
 	
 	def get_projectile_damage(self):
-		return 99999999
+		if self.magic == 'flame':
+			return 999999
+		else:
+			if pygame.time.get_ticks() - self.attack_time > 300:
+				return 0
+			else:
+				return 999999
 
 	def get_value_by_index(self,index):
 		return list(self.stats.values())[index]
