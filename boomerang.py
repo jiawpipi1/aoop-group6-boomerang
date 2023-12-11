@@ -5,15 +5,20 @@ from support import *
 from math import sin
 
 class Boomerang(Entity):
-	def __init__(self,x,y,groups,attack_sprites,direc,player):
+	def __init__(self,x,y,groups,attack_sprites,direc,player,type):
 		# general setup
 		super().__init__(groups)
+		self.time = pygame.time.get_ticks()
 		self.player = player
 		self.sprite_type = 'projectile'
 		self.direc = direc
+		self.type = type
 		# graphics setup
-		full_path = f'./graphics/weapons/axe/full.png'
-		self.image = pygame.image.load(full_path).convert_alpha()
+		if self.type == 'boomerang':
+			self.full_path = f'./graphics/weapons/axe/full.png'
+		else:
+			self.full_path = f'./graphics/weapons/rapier/full.png'
+		self.image = pygame.image.load(self.full_path).convert_alpha()
 		self.rect = self.image.get_rect(topleft = (x,y))
 		self.hitbox = self.rect.inflate(0,-10)
 		# movement
@@ -39,10 +44,14 @@ class Boomerang(Entity):
 		self.rect.center = self.hitbox.center
 	
 	def getspeed(self,player):
-		if self.speed > 0:
+		if self.type == 'boomerang':
 			self.speed = self.speed-0.5
 		else:
-			self.speed = -20
+			if pygame.time.get_ticks() - self.time > 300:
+				self.speed = 0
+				self.attack_damage = 0
+			else:
+				self.speed  = 30
 	
 
 	def get_next_attack(self):
@@ -56,8 +65,9 @@ class Boomerang(Entity):
 			else:
 				self.direction.x = speed*self.direc.x
 				self.direction.y = speed*self.direc.y
+	
 	def check_death(self):
-		if abs(self.rect.centerx-self.player.rect.centerx)<60 and abs(self.rect.centery-self.player.rect.centery)<60 and self.speed < 0:
+		if abs(self.rect.centerx-self.player.rect.centerx)<60 and abs(self.rect.centery-self.player.rect.centery)<60 and self.speed <= 0:
 			self.next_attack = True
 			self.kill()
 		elif self.rect.centerx > 1960 or self.rect.centerx < 0 or self.rect.centery >  1060 or self.rect.centery < 0:
