@@ -9,9 +9,7 @@ class UI:
 		self.font = pygame.font.Font(UI_FONT,UI_FONT_SIZE)
 
 		# bar setup 
-		self.health_bar_rect = pygame.Rect(10,10,HEALTH_BAR_WIDTH,BAR_HEIGHT)
-		self.energy_bar_rect = pygame.Rect(10,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)
-
+		
 		# convert weapon dictionary
 		self.weapon_graphics = []
 		for weapon in weapon_data.values():
@@ -59,25 +57,37 @@ class UI:
 			pygame.draw.rect(self.display_surface,UI_BORDER_COLOR,bg_rect,3)
 		return bg_rect
 
-	def weapon_overlay(self,weapon_index,has_switched):
-		bg_rect = self.selection_box(10,1152 - 90,has_switched)
+	def weapon_overlay(self,weapon_index,has_switched,index):
+		if index:
+			bg_rect = self.selection_box(10,1152 - 90,has_switched)
+		else:
+			bg_rect = self.selection_box(1860,1152 - 90,has_switched)
 		weapon_surf = self.weapon_graphics[weapon_index]
 		weapon_rect = weapon_surf.get_rect(center = bg_rect.center)
 
 		self.display_surface.blit(weapon_surf,weapon_rect)
 
-	def magic_overlay(self,magic_index,has_switched):
-		bg_rect = self.selection_box(80,1152 - 85,has_switched)
+	def magic_overlay(self,magic_index,has_switched,index):
+		if index:
+			bg_rect = self.selection_box(80,1152 - 85,has_switched)
+		else:
+			bg_rect = self.selection_box(1930,1152 - 85,has_switched)
 		magic_surf = self.magic_graphics[magic_index]
 		magic_rect = magic_surf.get_rect(center = bg_rect.center)
 
 		self.display_surface.blit(magic_surf,magic_rect)
 
-	def display(self,player):
+	def display(self,player,index):
+		if index:
+			self.health_bar_rect = pygame.Rect(10,10,HEALTH_BAR_WIDTH,BAR_HEIGHT)
+			self.energy_bar_rect = pygame.Rect(10,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)
+		else:
+			self.health_bar_rect = pygame.Rect(1840,10,HEALTH_BAR_WIDTH,BAR_HEIGHT)
+			self.energy_bar_rect = pygame.Rect(1900,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)
 		self.show_bar(player.health,player.stats['health'],self.health_bar_rect,HEALTH_COLOR)
 		self.show_bar(player.energy,player.stats['energy'],self.energy_bar_rect,ENERGY_COLOR)
 
 		# self.show_exp(player.exp)
 
-		self.weapon_overlay(player.weapon_index,not player.can_switch_weapon)
-		self.magic_overlay(player.magic_index,not player.can_switch_magic)
+		self.weapon_overlay(player.weapon_index,not player.can_switch_weapon,index)
+		self.magic_overlay(player.magic_index,not player.can_switch_magic,index)

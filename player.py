@@ -4,8 +4,13 @@ from support import import_folder
 from entity import Entity
 
 class Player(Entity):
-	def __init__(self,pos,groups,obstacle_sprites,create_attack,destroy_attack,create_magic):
+	def __init__(self,index,pos,groups,obstacle_sprites,create_attack,destroy_attack,create_magic,keybinds):
 		super().__init__(groups)
+		self.sprite_type = 'player'
+		self.death_sound = pygame.mixer.Sound('./audio/death.wav')
+		self.hit_sound = pygame.mixer.Sound('./audio/hit.wav')
+		self.index = index
+		self.keybinds = keybinds
 		self.image = pygame.image.load('./graphics/test/player.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 		self.hitbox = self.rect.inflate(-6,HITBOX_OFFSET['player'])
@@ -49,7 +54,7 @@ class Player(Entity):
 		self.energy = self.stats['energy'] * 0.8
 		# self.exp = 5000
 		self.speed = self.stats['speed']
-
+		self.projectile_cooldown = True
 		# damage timer
 		self.vulnerable = True
 		self.hurt_time = None
@@ -74,12 +79,12 @@ class Player(Entity):
 			keys = pygame.key.get_pressed()
 
 			# movement input
-			if keys[pygame.K_UP]:
+			if keys[self.keybinds['up']]:
 				self.direction.y = -1
 				self.status = 'up'
 				self.dir[0] = 0
 				
-			elif keys[pygame.K_DOWN]:
+			elif keys[self.keybinds['down']]:
 				self.direction.y = 1
 				self.status = 'down'
 				self.dir[0] = 1
@@ -88,11 +93,11 @@ class Player(Entity):
 				self.dir[0] = 2
 			
 
-			if keys[pygame.K_RIGHT]:
+			if keys[self.keybinds['right']]:
 				self.direction.x = 1
 				self.status = 'right'
 				self.dir[1] = 0
-			elif keys[pygame.K_LEFT]:
+			elif keys[self.keybinds['left']]:
 				self.direction.x = -1
 				self.status = 'left'
 				self.dir[1] = 1
@@ -100,7 +105,7 @@ class Player(Entity):
 				self.direction.x = 0
 				self.dir[1] = 2
     
-			if keys[pygame.K_LSHIFT]:
+			if keys[self.keybinds['run']]:
 				self.stats['speed'] = self.speed * 1.5
 				if self.can_attack:
 					self.can_attack_time = pygame.time.get_ticks()
@@ -109,29 +114,28 @@ class Player(Entity):
 				self.stats['speed'] = self.speed
 
 			# attack input 
-			if keys[pygame.K_SPACE] and self.can_attack:
+			if keys[self.keybinds['attack']] and self.can_attack:
 				self.attacking = True
 				self.attack_time = pygame.time.get_ticks()
-				self.create_attack()
+				self.create_attack(self.index)
 				self.weapon_attack_sound.play()
 				
 				self.can_attack = False
 				self.can_attack_time = pygame.time.get_ticks()
 
 			# projectile input 
-			if keys[pygame.K_LCTRL] and self.can_attack:
+			if keys[self.keybinds['projectile']] and self.can_attack:
 				self.attacking = True
 				self.attack_time = pygame.time.get_ticks()
 				style = list(magic_data.keys())[self.magic_index]
 				strength = list(magic_data.values())[self.magic_index]['strength'] + self.stats['magic']
 				cost = list(magic_data.values())[self.magic_index]['cost']
-				self.create_magic(style,strength)
-        
+				self.create_magic(style,strength,self.index,self.projectile_cooldown)
 				self.can_attack = False
 				self.can_attack_time = pygame.time.get_ticks()
         
 
-			if keys[pygame.K_q] and self.can_switch_weapon:
+			if keys[self.keybinds['switch_weapon']] and self.can_switch_weapon:
 				self.can_switch_weapon = False
 				self.weapon_switch_time = pygame.time.get_ticks()
 				
@@ -142,7 +146,7 @@ class Player(Entity):
 					
 				self.weapon = list(weapon_data.keys())[self.weapon_index]
 
-			if keys[pygame.K_e] and self.can_switch_magic:
+			if keys[self.keybinds['switch_projectile']] and self.can_switch_magic:
 				self.can_switch_magic = False
 				self.magic_switch_time = pygame.time.get_ticks()
 				
@@ -153,6 +157,18 @@ class Player(Entity):
 
 				self.magic = list(magic_data.keys())[self.magic_index]
 				
+	def get_damage(self,player,attack_type):
+		if self.vulnerable:
+			if attack_type == 'weapon':
+				self.health -= player.get_full_weapon_damage()
+				self.hit_sound.play()
+				self.vulnerable = False
+			else:
+				if player.get_projectile_damage() != 0:
+					self.health -= player.get_projectile_damage()
+					self.vulnerable = False
+					self.hit_sound.play()
+			self.hit_time = pygame.time.get_ticks()
 
 	def get_status(self):
 
@@ -183,7 +199,7 @@ class Player(Entity):
 		if self.attacking:
 			if current_time - self.attack_time >= self.attack_cooldown + weapon_data[self.weapon]['cooldown']:
 				self.attacking = False
-				self.destroy_attack()
+				self.destroy_attack(self.index)
 
 		if not self.can_switch_weapon:
 			if current_time - self.weapon_switch_time >= self.switch_duration_cooldown:

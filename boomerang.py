@@ -5,23 +5,25 @@ from support import *
 from math import sin
 
 class Boomerang(Entity):
-	def __init__(self,x,y,groups,attack_sprites,direc,player,type):
+	def __init__(self,x,y,groups,attack_sprites,direc,player,type,index):
 		# general setup
 		super().__init__(groups)
+		self.index = index
 		self.time = pygame.time.get_ticks()
 		self.player = player
 		self.sprite_type = 'projectile'
 		self.direc = direc
 		self.type = type
 		# graphics setup
-		if self.type == 'boomerang':
-			self.full_path = f'./graphics/weapons/axe/full.png'
+		if self.type == 'axe':
+			self.full_path = f'./graphics/projectiles/axe/1.png'
 		else:
-			self.full_path = f'./graphics/weapons/rapier/full.png'
+			self.full_path = f'./graphics/projectiles/sai/1.png'
+
+		
 		self.image = pygame.image.load(self.full_path).convert_alpha()
 		self.rect = self.image.get_rect(topleft = (x,y))
 		self.hitbox = self.rect.inflate(0,-10)
-		# movement
 		self.attack_sprites = attack_sprites
 		# stats
 		self.speed = 20
@@ -33,7 +35,8 @@ class Boomerang(Entity):
 		self.attack_time = None
 		self.attack_cooldown = 400
 
-		# invincibility timer
+		# animation
+		self.frame_index = 1
 
 		# sounds
 		self.hit_sound = pygame.mixer.Sound('./audio/hit.wav')
@@ -43,9 +46,9 @@ class Boomerang(Entity):
 		self.hitbox.y = self.hitbox.y + y
 		self.rect.center = self.hitbox.center
 	
-	def getspeed(self,player):
-		if self.type == 'boomerang':
-			self.speed = self.speed-0.5
+	def getspeed(self):
+		if self.type == 'axe':
+			self.speed = self.speed-0.35
 		else:
 			if pygame.time.get_ticks() - self.time > 300:
 				self.speed = 0
@@ -53,12 +56,7 @@ class Boomerang(Entity):
 			else:
 				self.speed  = 30
 	
-
-	def get_next_attack(self):
-		return self.next_attack
-
-
-	def actions(self,player,speed):
+	def actions(self,speed):
 			if((self.direc.x!=0.0 )&(self.direc.y!=0.0)):
 				self.direction.x = speed*0.7*self.direc.x
 				self.direction.y = speed*0.7*self.direc.y
@@ -68,17 +66,28 @@ class Boomerang(Entity):
 	
 	def check_death(self):
 		if abs(self.rect.centerx-self.player.rect.centerx)<60 and abs(self.rect.centery-self.player.rect.centery)<60 and self.speed <= 0:
-			self.next_attack = True
+			self.player.projectile_cooldown = True
 			self.kill()
 		elif self.rect.centerx > 1960 or self.rect.centerx < 0 or self.rect.centery >  1060 or self.rect.centery < 0:
-			self.next_attack = True
+			self.player.projectile_cooldown = True
 			self.kill()
+		elif pygame.time.get_ticks() - self.time > 6000:
+			self.player.projectile_cooldown = True
+			self.kill()
+
+	def animate(self):
+		self.frame_index += self.animation_speed
+		if self.frame_index >= 5:
+			self.frame_index = 1
+		self.full_path = f'./graphics/projectiles/{self.type}/{int(self.frame_index)}.png'
+		self.image = pygame.image.load(self.full_path).convert_alpha()
 
 	def update(self):
 		self.check_death()
 		self.move(self.direction.x,self.direction.y)
-		#self.animate()
+		if(self.speed!=0):
+			self.animate()
 
-	def boomerang_update(self,player):
-		self.getspeed(player)
-		self.actions(player,self.speed)
+	def boomerang_update(self):
+		self.getspeed()
+		self.actions(self.speed)
