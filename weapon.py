@@ -1,9 +1,10 @@
 import pygame 
 
 class Weapon(pygame.sprite.Sprite):
-	def __init__(self,player,groups):
+	def __init__(self,index,player,groups):
 		super().__init__(groups)
 		self.sprite_type = 'weapon'
+		self.index = index
 		direction = player.status.split('_')[0]
 
 		# graphic

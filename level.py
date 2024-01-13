@@ -15,7 +15,7 @@ from boomerang import Boomerang
 
 class Level:
 	def __init__(self, screen):
-
+		self.player = [None,None]
 		# get the display surface 
 		self.display_surface = screen
 		self.game_paused = False
@@ -25,7 +25,7 @@ class Level:
 		self.obstacle_sprites = pygame.sprite.Group()
 
 		# attack sprites
-		self.current_attack = None
+		self.current_attack = [None,None]
 		self.attack_sprites = pygame.sprite.Group()
 		self.attackable_sprites = pygame.sprite.Group()
 
@@ -38,8 +38,8 @@ class Level:
 
 		# particles
 		self.animation_player = AnimationPlayer()
-		self.magic_player = MagicPlayer(self.animation_player)
-		self.projectile = True
+		self.magic_player = [MagicPlayer(self.animation_player),MagicPlayer(self.animation_player)]
+		self.projectile = [True,True]
 
 	def create_map(self):
 		layouts = {
@@ -52,7 +52,6 @@ class Level:
 			'grass': import_folder('./graphics/Grass'),
 			'objects': import_folder('./graphics/objects')
 		}
-
 		for style,layout in layouts.items():
 			for row_index,row in enumerate(layout):
 				for col_index, col in enumerate(row):
@@ -75,46 +74,63 @@ class Level:
 
 						if style == 'entities':
 							if col == '394':
-								self.player = Player(
+								self.player[0] = Player(
+									0,
 									(128,128),
 									# (x,y),
-									[self.visible_sprites],
+									[self.visible_sprites,self.attackable_sprites],
 									self.obstacle_sprites,
 									self.create_attack,
 									self.destroy_attack,
-									self.create_magic)
-							else:
-								if col == '390': monster_name = 'bamboo'
-								elif col == '391': monster_name = 'spirit'
-								elif col == '392': monster_name ='raccoon'
-								else: monster_name = 'squid'
-								
-								Enemy(
-									monster_name,
-									(x,y),
+									self.create_magic,
+									{'up': pygame.K_UP ,'down': pygame.K_DOWN ,'left': pygame.K_LEFT ,'right': pygame.K_RIGHT ,'attack': pygame.K_SPACE ,'projectile': pygame.K_LCTRL,'switch_weapon': pygame.K_q ,'switch_projectile': pygame.K_e,'run': pygame.K_LSHIFT}
+									)
+							elif col == '395':
+								self.player[1] = Player(
+									1,
+									(1000,1000),
+									# (x,y),
 									[self.visible_sprites,self.attackable_sprites],
 									self.obstacle_sprites,
-									self.damage_player,
-									self.trigger_death_particles,
+									self.create_attack,
+									self.destroy_attack,
+									self.create_magic,
+									{'up': pygame.K_w ,'down': pygame.K_s ,'left': pygame.K_a ,'right': pygame.K_d ,'attack': pygame.K_1 ,'projectile': pygame.K_2,'switch_weapon': pygame.K_3 ,'switch_projectile': pygame.K_4,'run': pygame.K_5},
+									)
+							#else:
+							#	if col == '390': monster_name = 'bamboo'
+							#	elif col == '391': monster_name = 'spirit'
+							#	elif col == '392': monster_name ='raccoon'
+							#	else: monster_name = 'squid'
+								
+							#	Enemy(
+							#		monster_name,
+							#		(x,y),
+							#		[self.visible_sprites,self.attackable_sprites],
+							#		self.obstacle_sprites,
+							#		self.damage_player,
+							#		self.trigger_death_particles,
 									# self.add_exp
-         							)
+         					#		)
 
-	def create_attack(self):
-		self.current_attack = Weapon(self.player,[self.visible_sprites,self.attack_sprites])
+	def create_attack(self,index):
+		self.current_attack[index] = Weapon(index,self.player[index],[self.visible_sprites,self.attack_sprites])
 
-	def create_magic(self,style,strength):
-		if self.projectile:
-			if self.player.magic == 'flame':
-				self.magic_player.attack(self.player,[self.visible_sprites,self.attack_sprites],"boomerang")
+	def create_magic(self,style,strength,index,cooldown):
+		if cooldown:
+			self.player[index].projectile_cooldown = False
+			if self.player[index].magic == 'flame':
+				self.magic_player[index].attack(index,self.player[index],[self.visible_sprites,self.attack_sprites],"axe")
 			else:
-				self.magic_player.attack(self.player,[self.visible_sprites,self.attack_sprites],"axe")
-		self.projectile = self.magic_player.boom.get_next_attack()
+				self.magic_player[index].attack(index,self.player[index],[self.visible_sprites,self.attack_sprites],"sai")
+		
+		
 			
 
-	def destroy_attack(self):
-		if self.current_attack:
-			self.current_attack.kill()
-		self.current_attack = None
+	def destroy_attack(self,index):
+		if self.current_attack[index]:
+			self.current_attack[index].kill()
+		self.current_attack[index] = None
 
 	def player_attack_logic(self):
 		if self.attack_sprites:
@@ -128,15 +144,19 @@ class Level:
 							for leaf in range(randint(3,6)):
 								self.animation_player.create_grass_particles(pos - offset,[self.visible_sprites])
 							target_sprite.kill()
-						else:
-							target_sprite.get_damage(self.player,attack_sprite.sprite_type)
+						elif target_sprite.sprite_type == 'player':
+							player_index = target_sprite.index 
+							enemy_index = attack_sprite.index
+							if(player_index != enemy_index):
+								target_sprite.hurt_time = pygame.time.get_ticks()
+								target_sprite.get_damage(self.player[enemy_index],attack_sprite.sprite_type)
 
-	def damage_player(self,amount,attack_type):
-		if self.player.vulnerable:
-			self.player.health -= amount
-			self.player.vulnerable = False
-			self.player.hurt_time = pygame.time.get_ticks()
-			self.animation_player.create_particles(attack_type,self.player.rect.center,[self.visible_sprites])
+	def damage_player(self,amount,attack_type,index):
+		if self.player[index].vulnerable:
+			self.player[index].health -= amount
+			self.player[index].vulnerable = False
+			self.player[index].hurt_time = pygame.time.get_ticks()
+			self.animation_player.create_particles(attack_type,self.player[index].rect.center,[self.visible_sprites])
 
 	def trigger_death_particles(self,pos,particle_type):
 
@@ -151,17 +171,20 @@ class Level:
 
 	def run(self):
 		self.visible_sprites.custom_draw()
-		self.ui.display(self.player)
+		self.ui.display(self.player[0],0)
+		self.ui.display(self.player[1],1)
 
-		debug(f'{self.player.rect.centerx}, {self.player.rect.centery}, {self.player.can_attack}')
+		debug(f'{self.player[0].rect.centerx}, {self.player[0].rect.centery}, {self.player[0].can_attack}')
+		debug(f'{self.player[1].rect.centerx}, {self.player[1].rect.centery}, {self.player[1].can_attack}')
 		
 		if self.game_paused:
 			# self.upgrade.display()
 			...
 		else:
 			self.visible_sprites.update()
-			self.visible_sprites.enemy_update(self.player)
-			self.visible_sprites.boomerang_update(self.player)
+			#self.visible_sprites.enemy_update(self.player[0])
+			self.visible_sprites.boomerang_update()
+			#self.visible_sprites.enemy_update(self.player[1])
 			self.player_attack_logic()
 		
 
@@ -204,7 +227,8 @@ class YSortGroup(pygame.sprite.Group):
 		for enemy in enemy_sprites:
 			enemy.enemy_update(player)
 
-	def boomerang_update(self,player):
+	def boomerang_update(self):
 		boomerang_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'projectile']
 		for boomerang in boomerang_sprites:
-			boomerang.boomerang_update(player)
+			boomerang.boomerang_update()
+		
