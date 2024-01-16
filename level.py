@@ -14,32 +14,70 @@ from magic import MagicPlayer
 from boomerang import Boomerang
 
 class Level:
-	def __init__(self, screen):
-		self.player = [None,None]
-		# get the display surface 
-		self.display_surface = screen
-		self.game_paused = False
+	def __init__(self, screen, props):
+		self.transport = None
+		if props is not None:
+			self.transport = props['transport']
+			self.index = props['uuids'].index(self.transport.uuid)
+			self.player_count = props['player_count']
+		self.online = self.transport is not None
 
-		# sprite group setup
-		self.visible_sprites = YSortGroup(screen=screen)
-		self.obstacle_sprites = pygame.sprite.Group()
+		# self.locations = props['locations']
+		self.locations = [(128, 128), (128, 1000), (1000, 128), (1000, 1000)]
 
-		# attack sprites
-		self.current_attack = [None,None]
-		self.attack_sprites = pygame.sprite.Group()
-		self.attackable_sprites = pygame.sprite.Group()
+		if self.online:
+			self.player = [None] * self.player_count
+			# get the display surface 
+			self.display_surface = screen
+			self.game_paused = False
 
-		# sprite setup
-		self.create_map()
+			# sprite group setup
+			self.visible_sprites = YSortGroup(screen=screen)
+			self.obstacle_sprites = pygame.sprite.Group()
 
-		# user interface 
-		self.ui = UI(screen=screen)
-		# self.upgrade = Upgrade(self.player, screen)
+			# attack sprites
+			self.current_attack = [None] * self.player_count
+			self.attack_sprites = pygame.sprite.Group()
+			self.attackable_sprites = pygame.sprite.Group()
 
-		# particles
-		self.animation_player = AnimationPlayer()
-		self.magic_player = [MagicPlayer(self.animation_player),MagicPlayer(self.animation_player)]
-		self.projectile = [True,True]
+			# sprite setup
+			self.create_map()
+
+			# user interface 
+			self.ui = UI(screen=screen)
+			# self.upgrade = Upgrade(self.player, screen)
+	
+			# particles
+			self.animation_player = AnimationPlayer()
+			self.magic_player = [MagicPlayer(self.animation_player)] * self.player_count
+			self.projectile = [True] * self.player_count
+
+		else:
+			self.player = [None,None]
+			# get the display surface 
+			self.display_surface = screen
+			self.game_paused = False
+
+			# sprite group setup
+			self.visible_sprites = YSortGroup(screen=screen)
+			self.obstacle_sprites = pygame.sprite.Group()
+
+			# attack sprites
+			self.current_attack = [None,None]
+			self.attack_sprites = pygame.sprite.Group()
+			self.attackable_sprites = pygame.sprite.Group()
+
+			# sprite setup
+			self.create_map()
+
+			# user interface 
+			self.ui = UI(screen=screen)
+			# self.upgrade = Upgrade(self.player, screen)
+	
+			# particles
+			self.animation_player = AnimationPlayer()
+			self.magic_player = [MagicPlayer(self.animation_player),MagicPlayer(self.animation_player)]
+			self.projectile = [True,True]
 
 	def create_map(self):
 		layouts = {
@@ -52,6 +90,34 @@ class Level:
 			'grass': import_folder('./graphics/Grass'),
 			'objects': import_folder('./graphics/objects')
 		}
+  
+		if self.online:
+			for i in range(self.player_count):
+				if i == self.index:
+					self.player[i] = Player(
+						i,
+						self.locations[i],
+						[self.visible_sprites,self.attackable_sprites],
+						self.obstacle_sprites,
+						self.create_attack,
+						self.destroy_attack,
+						self.create_magic,
+						P1_KEY_BINDINGS,
+						self.transport
+						)
+				else:
+					self.player[i] = Player(
+						i,
+						self.locations[i],
+						[self.visible_sprites,self.attackable_sprites],
+						self.obstacle_sprites,
+						self.create_attack,
+						self.destroy_attack,
+						self.create_magic,
+						None,
+						self.transport
+						)
+   
 		for style,layout in layouts.items():
 			for row_index,row in enumerate(layout):
 				for col_index, col in enumerate(row):
@@ -72,7 +138,7 @@ class Level:
 							surf = graphics['objects'][int(col)]
 							Tile((x,y),[self.visible_sprites,self.obstacle_sprites],'object',surf)
 
-						if style == 'entities':
+						if style == 'entities' and (not self.online):
 							if col == '394':
 								self.player[0] = Player(
 									0,
@@ -83,7 +149,8 @@ class Level:
 									self.create_attack,
 									self.destroy_attack,
 									self.create_magic,
-									{'up': pygame.K_UP ,'down': pygame.K_DOWN ,'left': pygame.K_LEFT ,'right': pygame.K_RIGHT ,'attack': pygame.K_SPACE ,'projectile': pygame.K_LCTRL,'switch_weapon': pygame.K_q ,'switch_projectile': pygame.K_e,'run': pygame.K_LSHIFT}
+									P1_KEY_BINDINGS,
+									None
 									)
 							elif col == '395':
 								self.player[1] = Player(
@@ -95,7 +162,8 @@ class Level:
 									self.create_attack,
 									self.destroy_attack,
 									self.create_magic,
-									{'up': pygame.K_w ,'down': pygame.K_s ,'left': pygame.K_a ,'right': pygame.K_d ,'attack': pygame.K_1 ,'projectile': pygame.K_2,'switch_weapon': pygame.K_3 ,'switch_projectile': pygame.K_4,'run': pygame.K_5},
+									P2_KEY_BINDINGS,
+									None
 									)
 							#else:
 							#	if col == '390': monster_name = 'bamboo'
@@ -171,11 +239,14 @@ class Level:
 
 	def run(self):
 		self.visible_sprites.custom_draw()
-		self.ui.display(self.player[0],0)
-		self.ui.display(self.player[1],1)
+		if self.online:
+			self.ui.display(self.player[self.index])
+		else:
+			self.ui.display(self.player[0],0)
+			self.ui.display(self.player[1],1)
 
-		debug(f'{self.player[0].rect.centerx}, {self.player[0].rect.centery}, {self.player[0].can_attack}')
-		debug(f'{self.player[1].rect.centerx}, {self.player[1].rect.centery}, {self.player[1].can_attack}')
+		# debug(f'{self.player[0].rect.centerx}, {self.player[0].rect.centery}, {self.player[0].can_attack}')
+		# debug(f'{self.player[1].rect.centerx}, {self.player[1].rect.centery}, {self.player[1].can_attack}')
 		
 		if self.game_paused:
 			# self.upgrade.display()
@@ -222,13 +293,14 @@ class YSortGroup(pygame.sprite.Group):
 			if sprite.rect.top > 1152:
 				break
 
-	def enemy_update(self,player):
-		enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'enemy']
-		for enemy in enemy_sprites:
-			enemy.enemy_update(player)
+	# def enemy_update(self,player):
+	# 	enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'enemy']
+	# 	for enemy in enemy_sprites:
+	# 		enemy.enemy_update(player)
 
 	def boomerang_update(self):
 		boomerang_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'projectile']
 		for boomerang in boomerang_sprites:
 			boomerang.boomerang_update()
+			# print(boomerang)		
 		
