@@ -134,8 +134,6 @@ async def game_client(args):
 	
 	while True:
 		await asyncio.sleep(0.01)  # Add a small sleep to yield to other tasks
-		# resized_screen = pygame.transform.scale(game.screen, game.resolution)
-		
 		for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -176,7 +174,11 @@ if __name__ == '__main__':
  
 	parser.add_argument('-debug', '--debug', action='store_true')
 
-	args = parser.parse_args()
+	args = parser.parse_args([
+		'--resolution', '1280x720',
+		'-m',
+		'--host', '172.30.133.139'
+	])
  
 	resolution = tuple(map(int, args.resolution.split('x')))
 	fullscreen = args.fullscreen
