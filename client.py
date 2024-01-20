@@ -2,22 +2,12 @@ import asyncio
 import ast
 from enum import Enum
 
-server_address = '127.0.0.1'
-port = 12345
-
-# class GameStatus(Enum):
-#     playing = 1
-#     game_over = 2
-
 class GameClient(asyncio.DatagramProtocol):
     def __init__(self, uuid):
         super().__init__() 
         self.transport = None
         self.uuid = uuid
         self.datagram_received_cb = None
-        # self.uuids = []
-        # self.player_count = 0
-        # self.status = GameStatus.playing
               
     def connection_made(self, transport):
         self.transport = transport
@@ -25,19 +15,8 @@ class GameClient(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         message = data.decode()
-        
         self.datagram_received_cb(message)
-        
         # print(f"Received message '{message}' from {addr}")
-        
-        
-        
-        # if self.status == GameStatus.playing:
-        #     if message == 'start':
-        #         self.status = GameStatus.playing
-        #         print("Game started!")
-        # elif self.status == GameStatus.game_over:
-        #     ...
         
     def send_message(self, message):
         self.transport.sendto(message.encode())
@@ -55,7 +34,7 @@ class GameClient(asyncio.DatagramProtocol):
         ...
     
     @staticmethod
-    async def create_udp_client(uuid, port):
+    async def create_udp_client(uuid, server_address, port):
         _, protocol = await asyncio.get_event_loop().create_datagram_endpoint(lambda: GameClient(uuid),
                                                                             remote_addr=(server_address, port))
         # protocol.player_count = player_count
@@ -98,7 +77,7 @@ class GameClient(asyncio.DatagramProtocol):
         writer.close()
         await writer.wait_closed()
         
-        transport = await GameClient.create_udp_client(uuid, gs_port)
+        transport = await GameClient.create_udp_client(uuid, server_address, gs_port)
         
         return {'transport': transport, 'player_count': player_count, 'uuids': uuids}
         # return uuid, port

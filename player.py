@@ -26,11 +26,11 @@ class Player(Entity):
 		# movement 
 		self.attacking = False
 		self.attack_cooldown = 100
-		self.attack_time = None
+		self.attack_time = 0
 		self.obstacle_sprites = obstacle_sprites
 
 		self.attack_interval = 500
-		self.can_attack_time = None
+		self.can_attack_time = 0
 		self.can_attack = True
   
 		# weapon
@@ -39,7 +39,7 @@ class Player(Entity):
 		self.weapon_index = 0
 		self.weapon = list(weapon_data.keys())[self.weapon_index]
 		self.can_switch_weapon = True
-		self.weapon_switch_time = None
+		self.weapon_switch_time = 0
 		self.switch_duration_cooldown = 200
 
 		# magic 
@@ -47,7 +47,7 @@ class Player(Entity):
 		self.magic_index = 0
 		self.magic = list(magic_data.keys())[self.magic_index]
 		self.can_switch_magic = True
-		self.magic_switch_time = None
+		self.magic_switch_time = 0
 
 		# stats
 		self.stats = {'health': 100,'energy':60,'attack': 10,'magic': 4,'speed': 5}
@@ -257,9 +257,6 @@ class Player(Entity):
 	def get_value_by_index(self,index):
 		return list(self.stats.values())[index]
 
-	# def get_cost_by_index(self,index):
-	# 	return list(self.upgrade_cost.values())[index]
-
 	def energy_recovery(self):
 		if self.energy < self.stats['energy']:
 			self.energy += 0.01 * self.stats['magic']
@@ -274,16 +271,10 @@ class Player(Entity):
 			self.move(self.stats['speed'])
 			self.energy_recovery()
 			self.animate()
-			# if self.transport is not None:
-			# 	print(self.dump_to_network())
-			# 	self.transport.send_status(self.dump_to_network())	
-	
-		# print(self.dump_to_network())
   
 	def dump_to_network(self):
 		return {
 				'event': 'update',
-				# 'hitbox': self.hitbox,
       			'x': self.rect.x,
 				'y': self.rect.y,
 				'dir': self.dir,
@@ -294,17 +285,10 @@ class Player(Entity):
 				'health': self.health,
 				'energy': self.energy,
 				'weapon': self.weapon,
-				'magic': self.magic,
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy']
-		}
+				'magic': self.magic}
   
 	def update_from_network(self, player_data):
 		self.animate()
-		# self.hitbox = player_data['hitbox']
 		self.rect.x = player_data['x']
 		self.rect.y = player_data['y']
 		self.dir = player_data['dir']	
@@ -316,10 +300,3 @@ class Player(Entity):
 		self.energy = player_data['energy']
 		self.weapon = player_data['weapon']
 		self.magic = player_data['magic']
-  
-		# self.stats['speed'] = player_data['speed']
-		# self.stats['attack'] = player_data['attack']
-		# self.stats['magic'] = player_data['magic']
-		# self.stats['health'] = player_data['health']
-		# self.stats['energy'] = player_data['energy']
-		
