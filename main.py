@@ -174,11 +174,7 @@ if __name__ == '__main__':
  
 	parser.add_argument('-debug', '--debug', action='store_true')
 
-	args = parser.parse_args([
-		'--resolution', '1280x720',
-		'-m',
-		'--host', '172.30.133.139'
-	])
+	args = parser.parse_args()
  
 	resolution = tuple(map(int, args.resolution.split('x')))
 	fullscreen = args.fullscreen
