@@ -25,15 +25,9 @@ class GameServer(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         message = data.decode()
-        # Print message
-        # print(f"Received message '{message}' from {addr}")
-        
-        # Echo message
-        # self.transport.sendto(message.encode(), addr)
         raw_message = message
         message = ast.literal_eval(message)
         
-            
         if message["action"] == "status":
             # send status to all players other than the sender
             for uuid, addr in self.uuid_map.items():
@@ -105,7 +99,6 @@ async def lobby_handler(reader, writer, start_event):
 
         await start_event.wait()
 
-        # 在這裡加入相應的邏輯，例如向客戶端發送訊息
         wait_message = {"action": "start_game", "port": port, "uuids": list(GameServer.uuid_set), "player_count": player_count}
         writer.write(str(wait_message).encode())
         await writer.drain()

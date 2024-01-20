@@ -97,14 +97,15 @@ class Game:
 			self.window.blit(resized_screen, (0, 0))
 			pygame.display.update()
 			self.clock.tick(FPS)
-   
+
+# Periodically send player state to network
 async def send_player_state(player, transport):
 	while True:
 		transport.send_status(player.dump_to_network())
 		await asyncio.sleep(1 / 60)	
 
+# Call back function for receiving player state from network
 def update_player_state(message, level, players, uuids):
-	# print(message)
 	message = ast.literal_eval(message)
 	if message['action'] == 'status':
 		index = uuids.index(message['uuid'])

@@ -60,6 +60,9 @@ This project use '15 - fixes audio' from [Zelda](https://github.com/clear-code-p
 
 ### Server/Client Class & Architecture 
 ```mermaid
+---
+title: Server/Client class diagram
+---
 classDiagram
 BaseProtocol <|-- DatagramProtocol
 DatagramProtocol <|-- GameServer
@@ -99,14 +102,18 @@ class GameClient {
 
 ```mermaid
 ---
-title: Server flow
+title: Server/Client flow
 ---
 stateDiagram-v2
-    s1: Start
+    s1: Server start
     s2: Wait for players
     s3: Start game server
     s4: Start game server
     s5: Game server running...
+    s6: Client start
+    s7: Waiting for the game to begin...
+    s8: Game playing... 
+
     s1 --> s2: Create lobby(TCP)
     s2 --> s2
     s2 --> s3: Enter "start" command
@@ -114,14 +121,23 @@ stateDiagram-v2
 
     s4 --> s5: Create game server(UDP)
     s5 --> s5
+
+    s6 --> s7: Join lobby
+    s7 --> s8: Join the game
+    s8 --> s8
 ```
 
 ```mermaid
+---
+title: Server/Client interaction
+---
 sequenceDiagram
     Client->>Server: Join lobby
     Server->>Client: Send uuid
     Client-->>Server: Wait(persist connection)
     Server->>Client: Start game(send the port of game server)
     Client->>Server: Join game
+    Client->>Server: Update status...
+    Server->>Client: 
 ```
 
