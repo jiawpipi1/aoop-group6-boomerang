@@ -2,7 +2,6 @@ import pygame
 from settings import *
 from entity import Entity
 from support import *
-from math import sin
 
 class Boomerang(Entity):
 	def __init__(self,x,y,groups,attack_sprites,direc,player,type,index):

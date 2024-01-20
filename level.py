@@ -2,16 +2,12 @@ import pygame
 from settings import *
 from tile import Tile
 from player import Player
-from debug import debug
 from support import *
 from random import choice, randint
 from weapon import Weapon
 from ui import UI
-from enemy import Enemy
 from particles import AnimationPlayer
 from magic import MagicPlayer
-# from upgrade import Upgrade
-from boomerang import Boomerang
 
 class Level:
 	def __init__(self, screen, props):

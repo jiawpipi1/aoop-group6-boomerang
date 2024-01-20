@@ -1,7 +1,5 @@
 import pygame
 from settings import *
-from random import randint
-from entity import Entity
 from boomerang import Boomerang
 
 class MagicPlayer:

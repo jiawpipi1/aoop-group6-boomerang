@@ -6,7 +6,7 @@ from client import GameClient
 import asyncio
 import ast
 
-from debug import debug, debug_init
+# from debug import debug, debug_init
 
 class Game:
 	def __init__(self, props=None):
@@ -46,7 +46,7 @@ class Game:
 		main_sound.set_volume(0)
 		main_sound.play(loops = -1)
 
-		debug_init(self.screen)
+		# debug_init(self.screen)
 
 		pygame.display.update()
 	
@@ -97,14 +97,15 @@ class Game:
 			self.window.blit(resized_screen, (0, 0))
 			pygame.display.update()
 			self.clock.tick(FPS)
-   
+
+# Periodically send player state to network
 async def send_player_state(player, transport):
 	while True:
 		transport.send_status(player.dump_to_network())
 		await asyncio.sleep(1 / 60)	
 
+# Call back function for receiving player state from network
 def update_player_state(message, level, players, uuids):
-	# print(message)
 	message = ast.literal_eval(message)
 	if message['action'] == 'status':
 		index = uuids.index(message['uuid'])
@@ -172,13 +173,9 @@ if __name__ == '__main__':
 	parser.add_argument('--host', type=str, default='127.0.0.1')
 	parser.add_argument('--port', type=int, default=12345)
  
-	parser.add_argument('-debug', '--debug', action='store_true')
+	# parser.add_argument('-debug', '--debug', action='store_true')
 
-	args = parser.parse_args([
-		'--resolution', '1280x720',
-		'-m',
-		'--host', '172.30.133.139'
-	])
+	args = parser.parse_args()
  
 	resolution = tuple(map(int, args.resolution.split('x')))
 	fullscreen = args.fullscreen

@@ -1,6 +1,5 @@
 import asyncio
 import ast
-from enum import Enum
 
 class GameClient(asyncio.DatagramProtocol):
     def __init__(self, uuid):
@@ -37,8 +36,6 @@ class GameClient(asyncio.DatagramProtocol):
     async def create_udp_client(uuid, server_address, port):
         _, protocol = await asyncio.get_event_loop().create_datagram_endpoint(lambda: GameClient(uuid),
                                                                             remote_addr=(server_address, port))
-        # protocol.player_count = player_count
-        # protocol.uuids = uuids
         return protocol
 
     @staticmethod
@@ -70,9 +67,6 @@ class GameClient(asyncio.DatagramProtocol):
         gs_port = int(received["port"])
         player_count = int(received["player_count"])
         uuids = received["uuids"]
-        # locations = received["locations"]
-        
-        # print(locations)
 
         writer.close()
         await writer.wait_closed()
@@ -80,9 +74,11 @@ class GameClient(asyncio.DatagramProtocol):
         transport = await GameClient.create_udp_client(uuid, server_address, gs_port)
         
         return {'transport': transport, 'player_count': player_count, 'uuids': uuids}
-        # return uuid, port
 
 async def main():  
+    server_address = '127.0.0.1'
+    port = 12345
+    
     transport = await GameClient.join_game(server_address, port)
     
     transport.send_status({'message': 'hello'})
