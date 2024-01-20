@@ -6,7 +6,7 @@ from client import GameClient
 import asyncio
 import ast
 
-from debug import debug, debug_init
+# from debug import debug, debug_init
 
 class Game:
 	def __init__(self, props=None):
@@ -46,7 +46,7 @@ class Game:
 		main_sound.set_volume(0)
 		main_sound.play(loops = -1)
 
-		debug_init(self.screen)
+		# debug_init(self.screen)
 
 		pygame.display.update()
 	
@@ -172,7 +172,7 @@ if __name__ == '__main__':
 	parser.add_argument('--host', type=str, default='127.0.0.1')
 	parser.add_argument('--port', type=int, default=12345)
  
-	parser.add_argument('-debug', '--debug', action='store_true')
+	# parser.add_argument('-debug', '--debug', action='store_true')
 
 	args = parser.parse_args()
  

@@ -1,6 +1,5 @@
 import asyncio
 import ast
-from enum import Enum
 
 class GameClient(asyncio.DatagramProtocol):
     def __init__(self, uuid):
