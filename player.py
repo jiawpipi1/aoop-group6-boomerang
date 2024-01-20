@@ -4,13 +4,16 @@ from support import import_folder
 from entity import Entity
 
 class Player(Entity):
-	def __init__(self,index,pos,groups,obstacle_sprites,create_attack,destroy_attack,create_magic,keybinds):
+	def __init__(self,index,pos,groups,obstacle_sprites,create_attack,destroy_attack,create_magic,keybinds,transport):
 		super().__init__(groups)
 		self.sprite_type = 'player'
 		self.death_sound = pygame.mixer.Sound('./audio/death.wav')
 		self.hit_sound = pygame.mixer.Sound('./audio/hit.wav')
 		self.index = index
+		
+		self.transport = transport
 		self.keybinds = keybinds
+   
 		self.image = pygame.image.load('./graphics/test/player.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 		self.hitbox = self.rect.inflate(-6,HITBOX_OFFSET['player'])
@@ -264,9 +267,59 @@ class Player(Entity):
 			self.energy = self.stats['energy']
 
 	def update(self):
-		self.input()
-		self.cooldowns()
-		self.get_status()
+		if self.keybinds:
+			self.input()
+			self.cooldowns()
+			self.get_status()
+			self.move(self.stats['speed'])
+			self.energy_recovery()
+			self.animate()
+			# if self.transport is not None:
+			# 	print(self.dump_to_network())
+			# 	self.transport.send_status(self.dump_to_network())	
+	
+		# print(self.dump_to_network())
+  
+	def dump_to_network(self):
+		return {
+				'event': 'update',
+				# 'hitbox': self.hitbox,
+      			'x': self.rect.x,
+				'y': self.rect.y,
+				'dir': self.dir,
+				'vulnerable': self.vulnerable,
+				'direction_x': self.direction.x,
+				'direction_y': self.direction.y,
+				'status': self.status,
+				'health': self.health,
+				'energy': self.energy,
+				'weapon': self.weapon,
+				'magic': self.magic,
+				# 'speed': self.stats['speed'],
+				# 'attack': self.stats['attack'],
+				# 'magic': self.stats['magic'],
+				# 'health': self.stats['health'],
+				# 'energy': self.stats['energy']
+		}
+  
+	def update_from_network(self, player_data):
 		self.animate()
-		self.move(self.stats['speed'])
-		self.energy_recovery()
+		# self.hitbox = player_data['hitbox']
+		self.rect.x = player_data['x']
+		self.rect.y = player_data['y']
+		self.dir = player_data['dir']	
+		self.vulnerable = player_data['vulnerable']
+		self.direction.x = player_data['direction_x']
+		self.direction.y = player_data['direction_y']
+		self.status = player_data['status']
+		self.health = player_data['health']
+		self.energy = player_data['energy']
+		self.weapon = player_data['weapon']
+		self.magic = player_data['magic']
+  
+		# self.stats['speed'] = player_data['speed']
+		# self.stats['attack'] = player_data['attack']
+		# self.stats['magic'] = player_data['magic']
+		# self.stats['health'] = player_data['health']
+		# self.stats['energy'] = player_data['energy']
+		

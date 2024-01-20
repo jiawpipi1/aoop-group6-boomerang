@@ -77,7 +77,7 @@ class UI:
 
 		self.display_surface.blit(magic_surf,magic_rect)
 
-	def display(self,player,index):
+	def display(self,player,index=1):
 		if index:
 			self.health_bar_rect = pygame.Rect(10,10,HEALTH_BAR_WIDTH,BAR_HEIGHT)
 			self.energy_bar_rect = pygame.Rect(10,34,ENERGY_BAR_WIDTH,BAR_HEIGHT)

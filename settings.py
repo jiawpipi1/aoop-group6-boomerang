@@ -11,6 +11,29 @@ HITBOX_OFFSET = {
 	'grass': -10,
 	'invisible': 0}
 
+import pygame
+
+# key bindings
+P1_KEY_BINDINGS = {'up': pygame.K_UP ,
+                   'down': pygame.K_DOWN ,
+                   'left': pygame.K_LEFT ,
+                   'right': pygame.K_RIGHT ,
+                   'attack': pygame.K_SPACE ,
+                   'projectile': pygame.K_LCTRL,
+                   'switch_weapon': pygame.K_q ,
+                   'switch_projectile': pygame.K_e,
+                   'run': pygame.K_LSHIFT}
+
+P2_KEY_BINDINGS = {'up': pygame.K_w ,
+                   'down': pygame.K_s ,
+                   'left': pygame.K_a ,
+                   'right': pygame.K_d ,
+                   'attack': pygame.K_1 ,
+                   'projectile': pygame.K_2,
+                   'switch_weapon': pygame.K_3 ,
+                   'switch_projectile': pygame.K_4,
+                   'run': pygame.K_5}
+
 # ui 
 BAR_HEIGHT = 20
 HEALTH_BAR_WIDTH = 200

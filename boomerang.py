@@ -88,6 +88,55 @@ class Boomerang(Entity):
 		if(self.speed!=0):
 			self.animate()
 
+		# dump = self.dump_to_network()
+		# print(dump)	
+
 	def boomerang_update(self):
 		self.getspeed()
 		self.actions(self.speed)
+  
+	def dump_to_network(self):
+		return {
+			'index': self.index,
+			'x': self.rect.x,
+			'y': self.rect.y,
+			'frame_index': self.frame_index,
+			'speed': self.speed,
+			'direction': self.direction,
+			'attack_damage': self.attack_damage,
+			'attack_cooldown': self.attack_cooldown,
+			'attack_time': self.attack_time,
+			'can_attack': self.can_attack,
+			'next_attack': self.next_attack,
+			'sprite_type': self.sprite_type,
+			'type': self.type,
+			'hitbox': self.hitbox,
+			'player': self.player,
+			'time': self.time,
+			'full_path': self.full_path
+		}
+	
+	def update_from_network(self, data):
+		self.index = data['index']
+		self.rect.x = data['x']
+		self.rect.y = data['y']
+		self.frame_index = data['frame_index']
+		self.speed = data['speed']
+		self.direction = data['direction']
+		self.attack_damage = data['attack_damage']
+		self.attack_cooldown = data['attack_cooldown']
+		self.attack_time = data['attack_time']
+		self.can_attack = data['can_attack']
+		self.next_attack = data['next_attack']
+		self.sprite_type = data['sprite_type']
+		self.type = data['type']
+		self.hitbox = data['hitbox']
+		self.player = data['player']
+		self.time = data['time']
+		self.full_path = data['full_path']
+		# self.image = pygame.image.load(self.full_path).convert_alpha()
+		# self.rect = self.image.get_rect(topleft = (self.rect.x,self.rect.y))
+		# self.hitbox = self.rect.inflate(0,-10)
+		# self.attack_sprites = data['attack_sprites']
+		# self.hit_sound = pygame.mixer.Sound('./audio/hit.wav')
+		# self.hit_sound.set_volume(0.6)
