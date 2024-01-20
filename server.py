@@ -11,11 +11,6 @@ max_players = 0
 server_address = '0.0.0.0'
 port = 0  
 
-class GameStatus(Enum):
-    waiting = 0
-    playing = 1
-    game_over = 2
-
 class GameServer(asyncio.DatagramProtocol):
     # status = GameStatus.waiting
     uuid_set = set()

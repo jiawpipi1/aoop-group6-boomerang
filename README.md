@@ -1,15 +1,15 @@
 ## Group 6 AOOP Project
-This repo aims to make a clone of Boomerang Fu using pygame. 
+This repository aims to create a clone of Boomerang Fu using Pygame.
 
 - Objective
     - Movement    
         - Flash
     - Weapons
         - Melee
-            - Auto attack      
+            - Auto-attack      
         - Projectile
-            - boomerang     
-            - normal projectile
+            - Boomerang     
+            - Normal projectile
     - Obstacle/Collision
     - Multiplayer
     <!-- - Environment
@@ -32,7 +32,7 @@ $ python main.py
 ```sh
 $ python server.py [--max-players MAX_PLAYERS] [--host HOST] [--port PORT]
 ```
-Wait till all the players join and then enter `start` to start the game server.
+Wait until all players join the server, then enter `start` to initiate the game server.
 
 ### Join a server 
 ```sh
@@ -44,16 +44,84 @@ We forked these references in our organization.
 
 This project use '15 - fixes audio' from [Zelda](https://github.com/clear-code-projects/Zelda) as the starter kit.   -->
 
-### Tools / packages we need so far
+### Tools / packages used
 - pygame
 - asyncio (for networking)
 - ZeroTier (for LAN networking)
 
-### To-dos
+<!-- ### To-dos
 - [x] Skeleton
 - [x] Description of this project
 - [x] Single-player mode
 - [x] Multiplayer connectivity
-- [ ] UML diagram
+- [ ] UML diagram -->
 <!-- - [ ] UI
 - [ ] meet PEP8 / add docstring / write tests -->
+
+### Server/Client Class & Architecture 
+```mermaid
+classDiagram
+BaseProtocol <|-- DatagramProtocol
+DatagramProtocol <|-- GameServer
+DatagramProtocol <|-- GameClient
+class BaseProtocol {
+    +connection_made()
+    +connection_lost()
+    +pause_writing()
+    +resume_writing()
+}
+class DatagramProtocol {
+	+datagram_received()
+	+error_received()
+}
+class GameServer {
+    - uuid_map: map
+    - server_address: str
+    - port: int
+    - max_players: int
+    - player_count: int
+    - transport
+    +send_message(message, addr)
+    +send_status(status, addr)
+    +create_udp_server() static
+}
+
+class GameClient {
+    - uuid: str
+    - datagram_received_cb: function
+    - transport
+    +send_message(message, addr)
+    +send_status(status, addr)
+    +create_udp_client() static
+    +join_game() static
+}
+```
+
+```mermaid
+---
+title: Server flow
+---
+stateDiagram-v2
+    s1: Start
+    s2: Wait for players
+    s3: Start game server
+    s4: Start game server
+    s5: Game server running...
+    s1 --> s2: Create lobby(TCP)
+    s2 --> s2
+    s2 --> s3: Enter "start" command
+    s3 --> [*]: Send the udp port of the game server 
+
+    s4 --> s5: Create game server(UDP)
+    s5 --> s5
+```
+
+```mermaid
+sequenceDiagram
+    Client->>Server: Join lobby
+    Server->>Client: Send uuid
+    Client-->>Server: Wait(persist connection)
+    Server->>Client: Start game(send the port of game server)
+    Client->>Server: Join game
+```
+
