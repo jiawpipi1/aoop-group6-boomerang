@@ -28,14 +28,16 @@ class GameClient(asyncio.DatagramProtocol):
         
         self.datagram_received_cb(message)
         
+        # print(f"Received message '{message}' from {addr}")
+        
+        
+        
         # if self.status == GameStatus.playing:
         #     if message == 'start':
         #         self.status = GameStatus.playing
         #         print("Game started!")
         # elif self.status == GameStatus.game_over:
         #     ...
-        
-        print(f"Received message '{message}' from {addr}")
         
     def send_message(self, message):
         self.transport.sendto(message.encode())

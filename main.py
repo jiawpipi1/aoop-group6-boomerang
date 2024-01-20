@@ -58,7 +58,7 @@ class Game:
 	def get_all_player(self):
 		return self.level.player
 	
-	def run(self):
+	def run_local(self):
 		while True:
 			while self.menu:
 				resized_screen = pygame.transform.scale(self.screen, self.resolution) 
@@ -105,27 +105,39 @@ async def send_player_state(player, transport):
 		transport.send_status(player.dump_to_network())
 		await asyncio.sleep(1 / 60)	
 
-def update_player_state(message, players, uuids):
-	print(message)
+def update_player_state(message, level, players, uuids):
+	# print(message)
 	message = ast.literal_eval(message)
 	if message['action'] == 'status':
 		index = uuids.index(message['uuid'])
-		players[index].update_from_network(message)
-		# print(message)
+		if message['event'] == 'update':
+			players[index].update_from_network(message)
+		elif message['event'] == 'create_attack':
+			print('create_attack')
+			level.create_attack(index)
+		elif message['event'] == 'create_magic':
+			print('create_magic')
+			level.create_magic(message['style'], message['strength'], index, True)
+		elif message['event'] == 'destroy_attack':
+			print('destroy_attack')
+			level.destroy_attack(index)
   
 async def game_client(args):
 	props = await GameClient.join_game(args.host, args.port)
 	print(props['uuids'])
 	game = Game(props)
 	game.menu = False
-	players = game.get_all_player()
+	all_players = game.get_all_player()
 	player = game.get_self_player()
-	props['transport'].datagram_received_cb = lambda message: update_player_state(message, players, props['uuids'])
+	level = game.level
+	props['transport'].datagram_received_cb = lambda message: update_player_state(message, level, all_players, props['uuids'])
 	
 	asyncio.create_task(send_player_state(player, props['transport']))
 	
 	while True:
 		await asyncio.sleep(0.01)  # Add a small sleep to yield to other tasks
+		# resized_screen = pygame.transform.scale(game.screen, game.resolution)
+		
 		for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -176,5 +188,5 @@ if __name__ == '__main__':
 		asyncio.run(game_client(args))
 	else:
 		game = Game()
-		game.run()
+		game.run_local()
 

@@ -271,9 +271,9 @@ class Player(Entity):
 			self.input()
 			self.cooldowns()
 			self.get_status()
-			self.animate()
 			self.move(self.stats['speed'])
 			self.energy_recovery()
+			self.animate()
 			# if self.transport is not None:
 			# 	print(self.dump_to_network())
 			# 	self.transport.send_status(self.dump_to_network())	
@@ -281,8 +281,13 @@ class Player(Entity):
 		# print(self.dump_to_network())
   
 	def dump_to_network(self):
-		return {'x': self.rect.x,
+		return {
+				'event': 'update',
+				# 'hitbox': self.hitbox,
+      			'x': self.rect.x,
 				'y': self.rect.y,
+				'dir': self.dir,
+				'vulnerable': self.vulnerable,
 				'direction_x': self.direction.x,
 				'direction_y': self.direction.y,
 				'status': self.status,
@@ -294,52 +299,16 @@ class Player(Entity):
 				# 'attack': self.stats['attack'],
 				# 'magic': self.stats['magic'],
 				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				# 'speed': self.stats['speed'],
-				# 'attack': self.stats['attack'],
-				# 'magic': self.stats['magic'],
-				# 'health': self.stats['health'],
-				# 'energy': self.stats['energy'],
-				'speed': self.stats['speed'],
-				'attack': self.stats['attack'],
-				'magic': self.stats['magic'],
-				'health': self.stats['health'],
-				'energy': self.stats['energy']}
+				# 'energy': self.stats['energy']
+		}
   
 	def update_from_network(self, player_data):
 		self.animate()
+		# self.hitbox = player_data['hitbox']
 		self.rect.x = player_data['x']
 		self.rect.y = player_data['y']
+		self.dir = player_data['dir']	
+		self.vulnerable = player_data['vulnerable']
 		self.direction.x = player_data['direction_x']
 		self.direction.y = player_data['direction_y']
 		self.status = player_data['status']
@@ -347,38 +316,10 @@ class Player(Entity):
 		self.energy = player_data['energy']
 		self.weapon = player_data['weapon']
 		self.magic = player_data['magic']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
-		self.stats['energy'] = player_data['energy']
-		self.stats['speed'] = player_data['speed']
-		self.stats['attack'] = player_data['attack']
-		self.stats['magic'] = player_data['magic']
-		self.stats['health'] = player_data['health']
+  
+		# self.stats['speed'] = player_data['speed']
+		# self.stats['attack'] = player_data['attack']
+		# self.stats['magic'] = player_data['magic']
+		# self.stats['health'] = player_data['health']
+		# self.stats['energy'] = player_data['energy']
 		

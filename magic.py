@@ -48,7 +48,7 @@ class MagicPlayer:
 		self.direction = data['direction']
 		self.offset_x = data['offset_x']
 		self.offset_y = data['offset_y']
-		if data['boom']:
+		if data['boom'] is not None:
 			self.boom = Boomerang(0,0,None,None,None,None,None,None)
 		self.boom.load_from_network(data['boom'])
 				

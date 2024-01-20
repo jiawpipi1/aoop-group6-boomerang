@@ -22,6 +22,8 @@ class Level:
 			self.player_count = props['player_count']
 		self.online = self.transport is not None
 
+		self.local_attack_replay = []
+
 		# self.locations = props['locations']
 		self.locations = [(128, 128), (128, 1000), (1000, 128), (1000, 1000)]
 
@@ -93,30 +95,30 @@ class Level:
   
 		if self.online:
 			for i in range(self.player_count):
-				if i == self.index:
-					self.player[i] = Player(
-						i,
-						self.locations[i],
-						[self.visible_sprites,self.attackable_sprites],
-						self.obstacle_sprites,
-						self.create_attack,
-						self.destroy_attack,
-						self.create_magic,
-						P1_KEY_BINDINGS,
-						self.transport
-						)
-				else:
-					self.player[i] = Player(
-						i,
-						self.locations[i],
-						[self.visible_sprites,self.attackable_sprites],
-						self.obstacle_sprites,
-						self.create_attack,
-						self.destroy_attack,
-						self.create_magic,
-						None,
-						self.transport
-						)
+				# if i == self.index:
+				self.player[i] = Player(
+					i,
+					self.locations[i],
+					[self.visible_sprites,self.attackable_sprites],
+					self.obstacle_sprites,
+					self.create_attack,
+					self.destroy_attack,
+					self.create_magic,
+					P1_KEY_BINDINGS if i == self.index else None,
+					self.transport
+					)
+				# else:
+				# 	self.player[i] = Player(
+				# 		i,
+				# 		self.locations[i],
+				# 		[self.visible_sprites,self.attackable_sprites],
+				# 		self.obstacle_sprites,
+				# 		self.create_attack,
+				# 		self.destroy_attack,
+				# 		self.create_magic,
+				# 		None,
+				# 		self.transport
+				# 		)
    
 		for style,layout in layouts.items():
 			for row_index,row in enumerate(layout):
@@ -183,23 +185,45 @@ class Level:
 
 	def create_attack(self,index):
 		self.current_attack[index] = Weapon(index,self.player[index],[self.visible_sprites,self.attack_sprites])
+		print(index)
+		if self.online and index == self.index:
+			print(index == self.index)
+			self.transport.send_status({
+				'event': 'create_attack'
+			})
+			print('sending create_attack')
+		print(f'create attack {index}')
 
-	def create_magic(self,style,strength,index,cooldown):
+	def create_magic(self,style,strength,index,cooldown=True,magic_player=None):
 		if cooldown:
 			self.player[index].projectile_cooldown = False
-			if self.player[index].magic == 'flame':
-				self.magic_player[index].attack(index,self.player[index],[self.visible_sprites,self.attack_sprites],"axe")
-			else:
-				self.magic_player[index].attack(index,self.player[index],[self.visible_sprites,self.attack_sprites],"sai")
-		
-		
-			
+			weapon_name = "axe" if style == "flame" else "sai"
+			# if magic_player is not None:
+			# 	self.magic_player[index].load_from_network(magic_player)
+			# 	print(magic_player)	
+			self.magic_player[index].attack(index,self.player[index],[self.visible_sprites,self.attack_sprites], weapon_name)
+			if self.online and index == self.index:
+				data = {
+					'event': 'create_magic',
+					# 'magic_player': self.magic_player[index].dump_to_network(),
+					'style': style,
+					'strength': strength,
+					'index': index
+				}
+				self.transport.send_status(data)
+				print(data)
+			print(f'create magic {index}')
 
 	def destroy_attack(self,index):
 		if self.current_attack[index]:
 			self.current_attack[index].kill()
 		self.current_attack[index] = None
-
+		if self.online and index == self.index:
+			self.transport.send_status({
+				'event': 'destroy_attack'
+			})
+		print(f'destroy attack {index}')
+  
 	def player_attack_logic(self):
 		if self.attack_sprites:
 			for attack_sprite in self.attack_sprites:
@@ -213,11 +237,11 @@ class Level:
 								self.animation_player.create_grass_particles(pos - offset,[self.visible_sprites])
 							target_sprite.kill()
 						elif target_sprite.sprite_type == 'player':
-							player_index = target_sprite.index 
-							enemy_index = attack_sprite.index
-							if(player_index != enemy_index):
+							player_index, enemy_index = target_sprite.index, attack_sprite.index
+							if player_index != enemy_index:
 								target_sprite.hurt_time = pygame.time.get_ticks()
 								target_sprite.get_damage(self.player[enemy_index],attack_sprite.sprite_type)
+							print(f'player {player_index} get damage from player {enemy_index}')
 
 	def damage_player(self,amount,attack_type,index):
 		if self.player[index].vulnerable:
@@ -227,14 +251,9 @@ class Level:
 			self.animation_player.create_particles(attack_type,self.player[index].rect.center,[self.visible_sprites])
 
 	def trigger_death_particles(self,pos,particle_type):
-
 		self.animation_player.create_particles(particle_type,pos,self.visible_sprites)
 
-	# def add_exp(self,amount):
-	# 	self.player.exp += amount
-
 	def toggle_menu(self):
-
 		self.game_paused = not self.game_paused 
 
 	def run(self):
@@ -253,10 +272,10 @@ class Level:
 			...
 		else:
 			self.visible_sprites.update()
-			#self.visible_sprites.enemy_update(self.player[0])
 			self.visible_sprites.boomerang_update()
-			#self.visible_sprites.enemy_update(self.player[1])
 			self.player_attack_logic()
+			#self.visible_sprites.enemy_update(self.player[0])
+			#self.visible_sprites.enemy_update(self.player[1])
 		
 
 class YSortGroup(pygame.sprite.Group):
