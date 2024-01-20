@@ -2,8 +2,6 @@ import pygame, sys
 from settings import *
 from level import Level
 import argparse
-import time
-import socket
 from client import GameClient
 import asyncio
 import ast
