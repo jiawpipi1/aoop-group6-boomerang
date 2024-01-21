@@ -58,7 +58,7 @@ This project use '15 - fixes audio' from [Zelda](https://github.com/clear-code-p
 <!-- - [ ] UI
 - [ ] meet PEP8 / add docstring / write tests -->
 
-### Server/Client Class & Architecture 
+### Class & Architecture 
 
 ```mermaid
 ---
