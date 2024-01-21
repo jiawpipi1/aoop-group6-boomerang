@@ -58,7 +58,77 @@ This project use '15 - fixes audio' from [Zelda](https://github.com/clear-code-p
 <!-- - [ ] UI
 - [ ] meet PEP8 / add docstring / write tests -->
 
-### Server/Client Class & Architecture 
+### Class & Architecture 
+
+```mermaid
+---
+title: Main Game Diagram
+---
+classDiagram
+class Level {
+    +create_map
+    +create_attack
+    +create_magic
+    +player_attack_logic
+}
+
+class YSortGroup{
+    +draw
+    +update
+}
+class Entity{
+    +move
+    +collision
+}
+class Player{
+    +from_keyboard
+    +cooldowns
+    +update
+    +animate
+}
+class Magic{
+    +attack
+    +dump_to_network
+    +load_from_network
+}
+
+class pygame_sprite
+
+class Tile 
+
+class weapon 
+
+class boomerang{
+    +move
+    +actions
+    +animate
+    +update
+}
+
+class AnimationPlayer{
+    +reflect_image
+    +create_grass_particles
+    +create_particle
+}
+
+
+Level --> YSortGroup
+Entity <|-- Player
+Player --> Magic
+Player --> weapon
+Player --> boomerang
+Magic --> boomerang
+Tile --> Level
+AnimationPlayer --> Level
+pygame_sprite<|--YSortGroup
+pygame_sprite<|--Entity
+pygame_sprite<|--Magic
+pygame_sprite<|--Tile
+pygame_sprite<|--weapon
+pygame_sprite<|--Player
+pygame_sprite <|-- boomerang
+```
+
 ```mermaid
 ---
 title: Server/Client class diagram
@@ -140,4 +210,5 @@ sequenceDiagram
     Client->>Server: Update status...
     Server->>Client: 
 ```
+
 
